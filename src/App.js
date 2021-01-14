@@ -5,6 +5,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 import photoURL from './logo.svg'
+import './App.css'
 
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {useCollectionData} from 'react-firebase-hooks/firestore';
@@ -58,21 +59,33 @@ function SignOut() {
 function ChatRoom(){
   const messagesRef = firestore.collection('messages');
   const query = messagesRef.orderBy('createdAt').limit(25);
+  const dummy = React.useRef();
 
   const [messages] = useCollectionData(query, {idField: 'id'});
-  const [formValue, setFormaValue] = React.useState('');
+  const [formValue, setFormValue] = React.useState('');
 
   const sendMessage = async (e) =>{
-
+    e.preventDefault();
+    const {uid, photoURL} = auth.currentUser;
+    await messagesRef.add({
+      text:formValue,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uid,
+      photoURL
+    })
+    setFormValue('')
+    dummy.current.scrollIntoView({behavior: 'smooth'});
   }
 
   return (
     <>
-      <div>
+      <main>
+        <SignOut/>
         {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg}/>)}
-      </div>
+        <div ref={dummy}></div>
+      </main>
       <form onSubmit={sendMessage}>
-        <input type="text" value={formValue} onChange={e => setFormaValue(e.target.value)}/>
+        <input type="text" value={formValue} onChange={e => setFormValue(e.target.value)}/>
         <button type="submit">send</button>
       </form>
     </>

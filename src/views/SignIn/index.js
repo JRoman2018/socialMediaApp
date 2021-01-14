@@ -10,5 +10,3 @@ export function SignIn({auth, firebase}) {
         <button onClick={signInWithGoogle}>Sign in with google</button>
     )
 }
-
-export 
